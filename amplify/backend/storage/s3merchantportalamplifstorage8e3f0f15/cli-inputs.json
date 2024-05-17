@@ -1,0 +1,12 @@
+{
+  "resourceName": "s3merchantportalamplifstorage8e3f0f15",
+  "bucketName": "merchantportalamplif-storage-8e3f0f15",
+  "policyUUID": "2e7c8432",
+  "storageAccess": "auth",
+  "guestAccess": [],
+  "authAccess": [
+    "READ",
+    "CREATE_AND_UPDATE",
+    "DELETE"
+  ]
+}

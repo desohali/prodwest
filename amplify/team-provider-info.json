@@ -1,0 +1,23 @@
+{
+  "prodwest": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-merchantportalamplif-prodwest-194324-authRole",
+      "UnauthRoleArn": "arn:aws:iam::097150583326:role/amplify-merchantportalamplif-prodwest-194324-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::097150583326:role/amplify-merchantportalamplif-prodwest-194324-authRole",
+      "Region": "us-west-2",
+      "DeploymentBucketName": "amplify-merchantportalamplif-prodwest-194324-deployment",
+      "UnauthRoleName": "amplify-merchantportalamplif-prodwest-194324-unauthRole",
+      "StackName": "amplify-merchantportalamplif-prodwest-194324",
+      "StackId": "arn:aws:cloudformation:us-west-2:097150583326:stack/amplify-merchantportalamplif-prodwest-194324/3c723770-aea1-11ee-a5b6-0219d291484d",
+      "AmplifyAppId": "diuz7dy3vib12"
+    },
+    "categories": {
+      "auth": {
+        "merchantportalamplifa9ac8f1d": {}
+      },
+      "storage": {
+        "s3merchantportalamplifstorage8e3f0f15": {}
+      }
+    }
+  }
+}

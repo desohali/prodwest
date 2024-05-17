@@ -1,0 +1,91 @@
+/* @tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 0, 0, 0;
+  }
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
+}
+ */
+.btn-resendSignUpCode {
+  border: 0;
+  border-radius: .25em;
+  background: initial;
+  background-color: #dc3741;
+  color: #fff;
+  font-size: 1em;
+  font: inherit;
+  margin: .3125em;
+  padding: .625em 1.1em;
+  transition: box-shadow .1s;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.btn-resendSignUpCode:hover {
+  background-color: #aa2831;
+}
+
+.btn-resendSignUpCode:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(220, 55, 65, 0.5);
+}
+
+.swal2-container {
+  z-index: 999999 !important;
+}
+
+.cardMedia {
+  transition: transform 0.3s ease-in-out
+}
+
+.cardCustom:hover .cardMedia {
+  transform: scale(1.1);
+}
+
+.cardCustom {
+  background-color: white;
+  transition: all 300ms ease-in-out !important;
+}
+
+.cardCustom:hover {
+  cursor: auto;
+  background-color: #f2f2f2;
+}
+
+.MuiPagination-root{
+  display: inline-block;
+}
+
+.MuiCardContent-root{
+  padding: 1rem!important;
+}
+
+input[type='number']{
+  text-align: center!important;
+  font-size: medium;
+}
+
+.MuiBox-root .MuiBox-root .MuiBox-root {
+  height: inherit!important;
+}

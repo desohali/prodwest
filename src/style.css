@@ -1,0 +1,30 @@
+/* styles.css */
+
+.btn-resendSignUpCode {
+  border: 0;
+  border-radius: .25em;
+  background: initial;
+  background-color: #dc3741;
+  color: #fff;
+  font-size: 1em;
+  font: inherit;
+  margin: .3125em;
+  padding: .625em 1.1em;
+  transition: box-shadow .1s;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.btn-resendSignUpCode:hover {
+  background-color: #aa2831;
+}
+
+.btn-resendSignUpCode:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(220, 55, 65, 0.5);
+}
+
+.swal2-container {
+  z-index: 999999 !important;
+}

@@ -1,0 +1,422 @@
+# This "input" configures a global authorization rule to enable public access to
+# all models in this schema. Learn more about authorization rules here: https://docs.amplify.aws/cli/graphql/authorization-rules
+# input AMPLIFY { globalAuthRule: AuthRule = { allow: public } } # FOR TESTING ONLY!
+
+# GraphQL types:
+#   https://docs.aws.amazon.com/appsync/latest/devguide/graphql-types.html
+
+# Directives:
+#   https://docs.amplify.aws/javascript/tools/cli/graphqlapi/directives-reference/
+
+# Defining connections between models (Amplify Studio provides a good sandbox for this):
+#   https://docs.amplify.aws/javascript/build-a-backend/graphqlapi/data-modeling/
+#
+# > The @hasOne and @hasMany directives do not support referencing a model which then references
+# > the initial model via @hasOne or @hasMany if DataStore is enabled.
+#
+# Use @belongsTo, see https://github.com/aws-amplify/amplify-studio/issues/388
+
+# Auto-generate IDs: https://egghead.io/lessons/graphql-autogenerate-an-id-field-in-graphql-with-appsync-resolvers
+
+# Backfill (reindex) after adding a new @searchable or any @index (GSI) with 2 or more sort keys:
+#   https://docs.amplify.aws/javascript/build-a-backend/graphqlapi/troubleshooting/
+# This indicates that backfilling is performed automatically for @index with 0 or 1 sort keys:
+#   https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/GSI.OnlineOps.html
+# How to backfill new AppSync fields using AWS Amplify:
+#   https://stackoverflow.com/questions/58918941/how-to-backfill-new-appsync-fields-using-aws-amplify
+
+# Custom timestamp fields (note type is AWSDateTime):
+#   https://docs.amplify.aws/javascript/build-a-backend/graphqlapi/data-modeling/#customize-creation-and-update-timestamps
+# Sort query based on timestamp fields (note type is String):
+#   https://docs.amplify.aws/javascript/build-a-backend/graphqlapi/best-practice/query-with-sorting/
+# Older discussions reveal past confusion using updatedAt as a sort key:
+#   https://github.com/aws-amplify/amplify-cli/issues/401
+#   https://github.com/aws-amplify/amplify-category-api/issues/480
+# and protecing it from being settable by the client:
+#   https://github.com/aws-amplify/amplify-cli/issues/401#issuecomment-630402893
+#   https://docs.amplify.aws/javascript/tools/cli-legacy/auth-directive/#definition
+
+# overrides={{type: {label: "", variation: "quiet"}}}
+# overrides={{type: {isDisabled: "true"}}}
+
+type Factory
+  @model(timestamps: {createdAt: "created_at", updatedAt: "updated_at"})
+  @auth(rules: [{ allow: private }])
+{
+  id: ID!
+  name: String
+  url: AWSURL
+  order_contacts: [AWSEmail]
+  products: [Product] @hasMany(indexName: "byFactory", fields: ["id"])
+  qtype: String
+    @default(value: "Factory")
+    @index(
+      name: "factoriesByName",
+      queryField: "queryFactoriesByName"
+      sortKeyFields: ["name"]
+    )
+}
+
+#type Category
+#  @model(timestamps: {createdAt: "created_at", updatedAt: "updated_at"})
+#  @auth(rules: [{ allow: private }])
+#{
+#  id: ID!
+#  name: String!
+#    @index(name: "getCategoryByName", queryField: "getCategoryByName")
+#  products: [Product] @manyToMany(relationName: "ProductCategories")
+#  industries: [Industry] @manyToMany(relationName: "IndustryCategories")
+#  qtype: String
+#    @default(value: "Category")
+#    @index(
+#      name: "categoriesByName",
+#      queryField: "queryCategoriesByName"
+#      sortKeyFields: ["name"]
+#    )
+#}
+
+type Tag
+  @model(timestamps: {createdAt: "created_at", updatedAt: "updated_at"})
+  @auth(rules: [{ allow: private }])
+{
+  id: ID!
+  name: String!
+    @index(name: "getTagByName", queryField: "getTagByName")
+  products: [Product] @manyToMany(relationName: "ProductTags")
+  buyers: [Buyer] @manyToMany(relationName: "BuyerTags")
+  qtype: String
+    @default(value: "Tag")
+    @index(
+      name: "tagsByName",
+      queryField: "queryTagsByName"
+      sortKeyFields: ["name"]
+    )
+}
+
+enum ProductAvailableEnum {
+  yes
+  no
+}
+
+type Product
+  @model(timestamps: {createdAt: "created_at", updatedAt: "updated_at"})
+  @auth(rules: [{ allow: private }])
+{
+  id: ID!
+  name: String
+  msrp: Float
+  price: Float
+  sku: String
+  description: String
+  available: ProductAvailableEnum
+  media: [String]
+  item_weight_net: Float
+  item_weight_gross: Float
+  item_size_width: Float
+  item_size_depth: Float
+  item_size_height: Float
+  package_weight_net: Float
+  package_weight_gross: Float
+  package_size_width: Float
+  package_size_depth: Float
+  package_size_height: Float
+  items_per_package: Int
+#  categories: [Category] @manyToMany(relationName: "ProductCategories")
+  tags: [Tag] @manyToMany(relationName: "ProductTags")
+  factory_id: ID @index(name: "byFactory")
+  factory: Factory @belongsTo(fields: ["factory_id"])
+  updated_at: AWSDateTime
+  qtype: String
+    @default(value: "Product")
+    @index(
+      name: "productsByAvailableByName",
+      queryField: "queryProductsByAvailableByName"
+      sortKeyFields: ["available","name",]
+    )
+    @index(
+     name: "productsByAvailableByUpdatedAt",
+     queryField: "queryProductsByAvailableByUpdatedAt"
+     sortKeyFields: ["available","updated_at",]
+   )
+# how would work using timestamps() to define this field?
+#  updatedAt: String!
+#    @auth(rules: [{ allow: groups, groups: ["ForbiddenGroup"], operations: [] }])
+}
+
+type Package
+  @model(timestamps: {createdAt: "created_at", updatedAt: "updated_at"})
+  @auth(rules: [{ allow: private }])
+{
+  id: ID!
+  product: Product @hasOne
+  #shipment: Shipment
+  weight_net: Float
+  weight_gross: Float
+  size_width: Float
+  size_depth: Float
+  size_height: Float
+  qtype: String
+    @default(value: "Package")
+}
+
+type Shipment
+  @model(timestamps: {createdAt: "created_at", updatedAt: "updated_at"})
+  @auth(rules: [{ allow: private }])
+{
+  id: ID!
+  packages: [Package] @hasMany
+  departure: AWSDateTime
+  arrival: AWSDateTime
+  qtype: String
+    @default(value: "Shipment")
+}
+
+#type OrderStatus @model @auth(rules: [{ allow: private }]) {
+#000:buyer-placed
+#100:buyer-ready
+#150:buyer-cancelled
+#200:buyer-rejected
+#200:buyer-paid
+#300:factory-accepted
+#400:factory-rejected
+#500:factory-shipped
+#600:logistics-outfordelivery
+#}
+
+#type Orderlog
+#  @model(timestamps: {createdAt: "created_at", updatedAt: "updated_at"})
+#  @auth(rules: [{ allow: private }])
+#{
+#  id: ID!
+#  order_id: ID @index(name: "byOrder")
+#  order: Order @hasOne(fields: ["order_id"])
+#  qtype: String
+#    @default(value: "Orderlog")
+#}
+
+type Order
+  @model(timestamps: {createdAt: "created_at", updatedAt: "updated_at"})
+  @auth(rules: [{ allow: private }])
+{
+  id: ID!
+  business_id: ID @index(name: "byBusiness")
+  business: Business @hasOne(fields: ["business_id"])
+  buyer_id: ID @index(name: "byBuyer")
+  buyer: Buyer @hasOne(fields: ["buyer_id"])
+  order_status: String
+  paid_status: String
+  #completedAt: AWSDateTime
+  packed_items: String # packed list of Products
+  subtotal: String
+  tax: String        # ???
+  shipping: String
+  discount: String   # ???
+#  fee_descriptions: [String]
+#  fee_values: [String]
+  qtype: String
+    @default(value: "Order")
+}
+
+type Item
+  @model(timestamps: {createdAt: "created_at", updatedAt: "updated_at"})
+  @auth(rules: [{ allow: private }])
+{
+  id: ID!
+  product_id: ID @index(name: "byProduct")
+  product: Product @hasOne(fields: ["product_id"])
+  cart_id: ID @index(name: "byCart")
+  cart: Cart @belongsTo(fields: ["cart_id"])
+  quantity: Int
+  qtype: String
+    @default(value: "Item")
+}
+
+type Cart
+  @model(timestamps: {createdAt: "created_at", updatedAt: "updated_at"})
+  @auth(rules: [{ allow: private }])
+{
+  id: ID!
+  buyer_id: ID @index(name: "byBuyer")
+  buyer: Buyer @belongsTo(fields: ["buyer_id"])
+  items: [Item] @hasMany(indexName: "byCart", fields: ["id"])
+  qtype: String
+    @default(value: "Cart")
+}
+
+type Salesrep
+  @model(timestamps: {createdAt: "created_at", updatedAt: "updated_at"})
+  @auth(rules: [{ allow: private }])
+{
+  id: ID!
+  name: String!
+  title: String
+  email: AWSEmail!
+  phone: AWSPhone!
+  #businesses: [Business] @hasMany(indexName: "bySalesrep", fields: ["id"])
+  businesses: [Business] @manyToMany(relationName: "BusinessSalesreps")
+  qtype: String
+    @default(value: "Salesrep")
+    @index(
+      name: "salesrepsByName",
+      queryField: "querySalesrepsByName"
+      sortKeyFields: ["name"]
+    )
+}
+
+#type Industry
+#  @model(timestamps: {createdAt: "created_at", updatedAt: "updated_at"})
+#  @auth(rules: [{ allow: private }])
+#{
+#  id: ID!
+#  name: String!
+#  description: String
+#  businesses: [Business] @manyToMany(relationName: "BusinessIndustries")
+#  categories: [Category] @manyToMany(relationName: "IndustryCategories")
+#  qtype: String
+#    @default(value: "Industry")
+#    @index(
+#      name: "industriesByName",
+#      queryField: "queryIndustriesByName"
+#      sortKeyFields: ["name"]
+#    )
+#}
+
+type Address
+  @model(timestamps: {createdAt: "created_at", updatedAt: "updated_at"})
+  @auth(rules: [{ allow: private }])
+{
+  id: ID!
+  street: String!
+  city: String!
+  state: String!
+  postal_code: String!
+  country: String!
+  is_default: Boolean
+  business_id: ID @index(name: "byBusiness")
+  business: Business @belongsTo(fields: ["business_id"])
+  qtype: String
+    @default(value: "Address")
+}
+
+# FIXME: use ParameterStore?
+type Bank
+  @model(timestamps: {createdAt: "created_at", updatedAt: "updated_at"})
+  @auth(rules: [{ allow: private }])
+{
+  id: ID!
+# FIXME - need name?
+#  name: String!
+  account_name: String!
+  account_number: String!
+  routing_number: String!
+  is_default: Boolean
+  business_id: ID @index(name: "byBusiness")
+  business: Business @belongsTo(fields: ["business_id"])
+  qtype: String
+    @default(value: "Bank")
+}
+
+type Business
+  @model(timestamps: {createdAt: "created_at", updatedAt: "updated_at"})
+  @auth(rules: [{ allow: private }])
+{
+  id: ID!
+  name: String!
+  description: String
+  #salesrep_id: ID @index(name: "bySalesrep")
+  #salesrep: Salesrep @belongsTo(fields: ["salesrep_id"])
+  salesreps: [Salesrep] @manyToMany(relationName: "BusinessSalesreps")
+#  industries: [Industry] @manyToMany(relationName: "BusinessIndustries")
+  addresses: [Address] @hasMany(indexName: "byBusiness", fields: ["id"])
+  banks: [Bank] @hasMany(indexName: "byBusiness", fields: ["id"])
+  buyers: [Buyer] @hasMany(indexName: "byBusiness", fields: ["id"])
+  qtype: String
+    @default(value: "Business")
+    @index(
+      name: "businessesByName",
+      queryField: "queryBusinessesByName"
+      sortKeyFields: ["name"]
+    )
+}
+
+type Buyer
+  @model(timestamps: {createdAt: "created_at", updatedAt: "updated_at"})
+  @auth(rules: [{ allow: private }])
+{
+  id: ID!
+  first_name: String!
+  last_name: String!
+  user_name: String!
+  last_login: AWSDateTime
+  #Status: not-started, pending, approved, denied need this to know if they have a pending application before we create any business record
+  status: String @default(value: "not-started")
+  is_owner: Boolean!
+  email: AWSEmail!
+  phone: AWSPhone!
+  business_id: ID @index(name: "byBusiness")
+  business: Business @belongsTo(fields: ["business_id"])
+  cart_id: ID @index(name: "byCart")
+  cart: Cart @hasOne(fields: ["cart_id"])
+  tags: [Tag] @manyToMany(relationName: "BuyerTags")
+  qtype: String
+    @default(value: "Buyer")
+}
+
+enum ApplicationStatusEnum {
+  pending
+  approved
+  denied
+}
+
+type Application
+  @model(timestamps: {createdAt: "created_at", updatedAt: "updated_at"})
+  @auth(rules: [{ allow: private }])
+{
+  id: ID!
+  # @belongsTo Buyer?
+  #userProfileId: ID! #User's Sub so we can locate the user
+  buyer_id: ID @index(name: "byBuyer")
+  buyer: Buyer @hasOne(fields: ["buyer_id"])
+  status: String #pending, approved, denied
+  business_name: String!
+  street: String!
+  city: String!
+  state: String!
+  postal_code: String!
+  country: String!
+  qtype: String
+    @default(value: "Application")
+}
+
+type Blurb
+  @model(timestamps: {createdAt: "created_at", updatedAt: "updated_at"})
+  @auth(rules: [{ allow: private }])
+{
+  id: ID!
+  title: String!
+  description: String!
+  start_date: AWSDateTime!
+  end_date: AWSDateTime!
+  qtype: String
+    @default(value: "Blurb")
+}
+
+#type Configuration
+#  @model(timestamps: {createdAt: "created_at", updatedAt: "updated_at"})
+#  @auth(rules: [{ allow: private }])
+#{
+#  id: ID!
+#  name: String
+#  max_cart_items: Int
+#  qtype: String
+#    @default(value: "Configuration")
+#}
+
+
+# use Buyer?
+## TO support additional information about the user
+#type UserProfile @model @auth(rules: [{ allow: owner }]) {
+#  PK: ID! @primaryKey # COGNITO_USER_SUB
+#  SK: ID @index # Business ID... or something else?
+#  profile: String
+#}
