@@ -2,7 +2,8 @@
   "/_app": "pages/_app.js",
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
-  "/tags/[idTag]": "pages/tags/[idTag].js",
   "/": "pages/index.js",
-  "/orders": "pages/orders.js"
+  "/tags/[idTag]": "pages/tags/[idTag].js",
+  "/orders": "pages/orders.js",
+  "/auth/login": "pages/auth/login.js"
 }
